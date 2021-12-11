@@ -1,35 +1,35 @@
 package me.apqx.downie
 
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
+const val inDir = "/Users/apqx/Downloads/opera";
 const val outDir = "/Users/apqx/Downloads/downie";
 val logFile = File(outDir, "downie.log")
 
-fun main() {
-    // 第一步，下载
-    downloadPicsByThumbFile(File("/Users/apqx/Downloads/opera"))
-    // 第二步，合并，因为无法监测Downie是否下载完成，所以需要手动确认下载完成后再执行合并操作
-//    mergePics()
-}
-
 /**
- * 整理下载下来的照片，重命名并移动到[outDir]中
+ * 下载新浪博客原图的工具
+ * 只需要把想要的缩略图从浏览器拖到[inDir]中，执行此程序即可下载原图
  */
-fun mergePics() {
-    File(outDir).listFiles().forEach {
-        // 跳过文件
-        if (it.isFile) return@forEach
-        // 下载的文件就在文件夹里，把文件重命名为父文件夹的名字，移动到outDir中
-        it.listFiles().forEach { pic ->
-            println("merge ${it.name}/${pic.name}")
-            Files.move(pic.toPath(), File(it.parent, it.name + ".jpg").toPath(), StandardCopyOption.REPLACE_EXISTING)
-            it.delete()
+fun main() {
+    println("select options, then press enter")
+    println("1. download from thumb")
+    println("2. merge")
+    val reader = BufferedReader(InputStreamReader(System.`in`))
+    when(reader.readLine()) {
+        // 下载
+        "1" -> {
+            downloadPicsByThumbFile(File(inDir))
+            println("if confirm download is done, press enter to proceed merge, or will close")
+            if (reader.readLine().isEmpty()) mergePics()
         }
-
+        // 合并，因为无法监测Downie是否下载完成，所以需要手动确认下载完成后再执行合并操作
+        "2" -> mergePics()
     }
 }
 
@@ -77,4 +77,21 @@ private fun getDownieUrl(picUrl: String, outDir: String): String {
 private fun getPicUrl(fileName: String): String {
     val prefix = "http://s16.sinaimg.cn/orignal/"
     return prefix + fileName
+}
+
+/**
+ * 整理下载下来的照片，重命名并移动到[outDir]中
+ */
+fun mergePics() {
+    File(outDir).listFiles().forEach {
+        // 跳过文件
+        if (it.isFile) return@forEach
+        // 下载的文件就在文件夹里，把文件重命名为父文件夹的名字，移动到outDir中
+        it.listFiles().forEach { pic ->
+            println("merge ${it.name}/${pic.name}")
+            Files.move(pic.toPath(), File(it.parent, it.name + ".jpg").toPath(), StandardCopyOption.REPLACE_EXISTING)
+            it.delete()
+        }
+
+    }
 }
