@@ -8,8 +8,19 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
+/**
+ * 保存着缩略图的目录
+ */
 const val inDir = "/Users/apqx/Downloads/opera";
+
+/**
+ * 下载文件的输出目录
+ */
 const val outDir = "/Users/apqx/Downloads/downie";
+
+/**
+ * 日志文件
+ */
 val logFile = File(outDir, "downie.log")
 
 /**
@@ -38,7 +49,7 @@ fun downloadPicsByUrl(url: String) {
 }
 
 /**
- * 根据已有的新浪博客缩略图，下载新浪博客的原始照片，把缩略图的文件名，加上下面URL为前缀，发送给Downie下载
+ * 根据已有的新浪博客缩略图，下载原始照片，把缩略图的文件名，加上下面URL为前缀，发送给Downie下载
  * http://s16.sinaimg.cn/orignal/
  */
 fun downloadPicsByThumbFile(thumb: File) {
@@ -59,8 +70,8 @@ fun downloadPicsByThumbFile(thumb: File) {
         processBuilder.redirectErrorStream(true)
         processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
 
-        val process = processBuilder.start()
-        process.waitFor()
+//        val process = processBuilder.start()
+//        process.waitFor()
     } else {
         thumb.listFiles().forEach {
             downloadPicsByThumbFile(it)
@@ -68,12 +79,18 @@ fun downloadPicsByThumbFile(thumb: File) {
     }
 }
 
+/**
+ * 拼接向Downie中添加下载任务所需的URL
+ */
 private fun getDownieUrl(picUrl: String, outDir: String): String {
     val encodedPicUrl = URLEncoder.encode(picUrl, StandardCharsets.UTF_8)
     return "downie://XUOpenURL?url=$encodedPicUrl&destination=$outDir"
 
 }
 
+/**
+ * 拼接照片原图的URL
+ */
 private fun getPicUrl(fileName: String): String {
     val prefix = "http://s16.sinaimg.cn/orignal/"
     return prefix + fileName
