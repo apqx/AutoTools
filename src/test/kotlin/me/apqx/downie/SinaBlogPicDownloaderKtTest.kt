@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 
-internal class SinaBlogPicToolsKtTest {
+internal class SinaBlogPicDownloaderKtTest {
 
     @Test
     fun getPicId() {
