@@ -41,7 +41,7 @@ fun main() {
     when (reader.readLine()) {
         // 根据URL下载
         "1" -> {
-            println("input url, then press enter")
+            println("input url, split with ' ', then press enter")
             downloadPicsByUrl(reader.readLine())
             checkToMerge(reader)
         }
@@ -56,45 +56,60 @@ fun main() {
 }
 
 private fun checkToMerge(reader: BufferedReader) {
-    println("if confirm download is done, press enter to proceed merge, or will close")
+    println("if confirm download is done, press enter to proceed merge, or other keys to close")
     if (reader.readLine().isEmpty()) mergePics()
 }
 
 /**
  * 根据提供的新浪博文URL，自动解析博客中的照片，并发送给Downie下载
  */
-fun downloadPicsByUrl(url: String) {
-    val doc = Jsoup.connect(url).get()
-    println("parsing ${doc.title()}")
-    // 桌面版网站
-    doc.select("div.articalContent").forEach {
-        it.select("a > img").forEach {
-            parseImgTag(it, 1)
+fun downloadPicsByUrl(urls: String) {
+    val descriptionBuilder = StringBuilder()
+    urls.split(" ").forEach {
+        val doc = Jsoup.connect(it).get()
+        println("parsing ${doc.title()}")
+        // 桌面版网站
+        doc.select("div.articalContent").forEach {
+            it.select("a > img").forEach {
+                parseImgTag(it, 1)
+            }
         }
-    }
-    doc.select("div.BNE_cont").forEach {
-        it.select("a > img").forEach {
-            parseImgTag(it, 2)
+        doc.select("div.BNE_cont").forEach {
+            it.select("a > img").forEach {
+                parseImgTag(it, 2)
+            }
         }
+        descriptionBuilder.appendLine(doc.title()).appendLine(it).appendLine()
     }
     // 移动版网站
     // 生成一个README.md文件
-    generateReadme(url, doc.title())
+    generateReadme(descriptionBuilder.toString())
 }
 
-fun generateReadme(url: String, title: String) {
+fun generateReadme(str: String) {
     BufferedWriter(OutputStreamWriter(FileOutputStream(File(outDir, "README.md")))).apply {
-        write("$title\n$url")
+        write(str)
         flush()
         close()
     }
 }
 
+private var count = 0
+
 private fun parseImgTag(img: Element, parseType: Int) {
     val imgUrl = img.attr("real_src")
     val imgId = getPicId(imgUrl)
-    println("find img by type $parseType $imgUrl $imgId")
+    println("find ${formatCount(++count)} img by type $parseType $imgUrl $imgId")
     download(imgId)
+}
+
+fun formatCount(count: Int): String {
+    if (count >= 1000) return count.toString()
+    val zeroBuilder = StringBuilder()
+    for (i in 0 until  (3 - count.toString().length)){
+        zeroBuilder.append("0")
+    }
+    return zeroBuilder.append(count).toString()
 }
 
 fun getPicId(imgUrl: String): String = imgUrl.split("/").last().removeSuffix("&690")
