@@ -1,8 +1,9 @@
 package me.apqx.downie
 
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import java.awt.Desktop
+import java.io.*
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -24,59 +25,114 @@ const val outDir = "/Users/apqx/Downloads/downie";
 val logFile = File(outDir, "downie.log")
 
 /**
- * 下载新浪博客原图的工具
- * 只需要把想要的缩略图从浏览器拖到[inDir]中，执行此程序即可下载原图
+ * 下载新浪博客原图的工具，2种下载模式
+ * 1. 根据URL下载，自动解析URL，下载所有博文中的图片原图，必须是
+ * 2. 根据缩略图下载，把想要的缩略图从浏览器拖到[inDir]中，执行此程序即可下载原图
+ *
+ * 确认下载完成后，需要手动执行合并
+ * 3. 把Downie下载的文件合并为正确格式的剧照
  */
 fun main() {
-    println("select options, then press enter")
-    println("1. download from thumb")
-    println("2. merge")
+    println("sina blog picture download tools, select option, then press enter")
+    println("1. download from url")
+    println("2. download from thumb in $inDir")
+    println("3. merge")
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    when(reader.readLine()) {
-        // 下载
+    when (reader.readLine()) {
+        // 根据URL下载
         "1" -> {
+            println("input url, then press enter")
+            downloadPicsByUrl(reader.readLine())
+            checkToMerge(reader)
+        }
+        // 根据缩略图下载
+        "2" -> {
             downloadPicsByThumbFile(File(inDir))
-            println("if confirm download is done, press enter to proceed merge, or will close")
-            if (reader.readLine().isEmpty()) mergePics()
+            checkToMerge(reader)
         }
         // 合并，因为无法监测Downie是否下载完成，所以需要手动确认下载完成后再执行合并操作
-        "2" -> mergePics()
+        "3" -> mergePics()
     }
 }
 
-fun downloadPicsByUrl(url: String) {
-
+private fun checkToMerge(reader: BufferedReader) {
+    println("if confirm download is done, press enter to proceed merge, or will close")
+    if (reader.readLine().isEmpty()) mergePics()
 }
+
+/**
+ * 根据提供的新浪博文URL，自动解析博客中的照片，并发送给Downie下载
+ */
+fun downloadPicsByUrl(url: String) {
+    val doc = Jsoup.connect(url).get()
+    println("parsing ${doc.title()}")
+    // 桌面版网站
+    doc.select("div.articalContent").forEach {
+        it.select("a > img").forEach {
+            parseImgTag(it, 1)
+        }
+    }
+    doc.select("div.BNE_cont").forEach {
+        it.select("a > img").forEach {
+            parseImgTag(it, 2)
+        }
+    }
+    // 移动版网站
+    // 生成一个README.md文件
+    generateReadme(url, doc.title())
+}
+
+fun generateReadme(url: String, title: String) {
+    BufferedWriter(OutputStreamWriter(FileOutputStream(File(outDir, "README.md")))).apply {
+        write("$title\n$url")
+        flush()
+        close()
+    }
+}
+
+private fun parseImgTag(img: Element, parseType: Int) {
+    val imgUrl = img.attr("real_src")
+    val imgId = getPicId(imgUrl)
+    println("find img by type $parseType $imgUrl $imgId")
+    download(imgId)
+}
+
+fun getPicId(imgUrl: String): String = imgUrl.split("/").last().removeSuffix("&690")
 
 /**
  * 根据已有的新浪博客缩略图，下载原始照片，把缩略图的文件名，加上下面URL为前缀，发送给Downie下载
  * http://s16.sinaimg.cn/orignal/
  */
 fun downloadPicsByThumbFile(thumb: File) {
-    if(thumb.isFile) {
+    if (thumb.isFile) {
         val extension = thumb.extension.lowercase()
         if (!extension.contains("jpg")
-            && !extension.contains("jpeg")) {
+            && !extension.contains("jpeg")
+        ) {
             println("jump ${thumb.name}")
             return
         }
-        val picUrl = getPicUrl(thumb.nameWithoutExtension)
-        println("process $picUrl")
-        val downieUrl = getDownieUrl(picUrl, "$outDir/${thumb.nameWithoutExtension}")
-        val shell = "open -a 'Downie 4' '$downieUrl'"
-        println(shell)
-        // 发送到Downie的下载队列中
-        val processBuilder = ProcessBuilder("open", "-a", "Downie 4", downieUrl)
-        processBuilder.redirectErrorStream(true)
-        processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
-
-//        val process = processBuilder.start()
-//        process.waitFor()
+        download(thumb.nameWithoutExtension)
     } else {
         thumb.listFiles().forEach {
             downloadPicsByThumbFile(it)
         }
     }
+}
+
+private fun download(imgId: String) {
+    val picUrl = getPicUrl(imgId)
+    println("process $picUrl")
+    val downieUrl = getDownieUrl(picUrl, "$outDir/$imgId")
+    val shell = "open -a 'Downie 4' '$downieUrl'"
+    println(shell)
+    // 发送到Downie的下载队列中
+    val processBuilder = ProcessBuilder("open", "-a", "Downie 4", downieUrl)
+    processBuilder.redirectErrorStream(true)
+    processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
+
+    val process = processBuilder.start()
+    process.waitFor()
 }
 
 /**
@@ -100,15 +156,21 @@ private fun getPicUrl(fileName: String): String {
  * 整理下载下来的照片，重命名并移动到[outDir]中
  */
 fun mergePics() {
-    File(outDir).listFiles().forEach {
-        // 跳过文件
-        if (it.isFile) return@forEach
-        // 下载的文件就在文件夹里，把文件重命名为父文件夹的名字，移动到outDir中
-        it.listFiles().forEach { pic ->
-            println("merge ${it.name}/${pic.name}")
-            Files.move(pic.toPath(), File(it.parent, it.name + ".jpg").toPath(), StandardCopyOption.REPLACE_EXISTING)
-            it.delete()
+    File(outDir).apply {
+        listFiles().forEach {
+            // 跳过文件
+            if (it.isFile) return@forEach
+            // 下载的文件就在文件夹里，把文件重命名为父文件夹的名字，移动到outDir中
+            it.listFiles().forEach { pic ->
+                println("merge ${it.name}/${pic.name}")
+                Files.move(
+                    pic.toPath(),
+                    File(it.parent, it.name + ".jpg").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+                it.delete()
+            }
         }
-
+        Desktop.getDesktop().open(this)
     }
 }
