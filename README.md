@@ -1,5 +1,3 @@
-我自己使用的一些实现自动化操作的工具。
-
 # SinaBlogPicDownloader
 
 新浪博客照片原图下载器，根据博文URL解析出文章里所有缩略图对应的原图地址，发送到[Downie](https://software.charliemonroe.net/downie)中批量下载。

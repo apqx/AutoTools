@@ -26,7 +26,7 @@ val logFile = File(outDir, "downie.log")
 
 /**
  * 下载新浪博客原图的工具，2种下载模式
- * 1. 根据URL下载，自动解析URL，下载所有博文中的图片原图，必须是
+ * 1. 根据URL下载，自动解析URL，下载所有博文中的图片原图
  * 2. 根据缩略图下载，把想要的缩略图从浏览器拖到[inDir]中，执行此程序即可下载原图
  *
  * 确认下载完成后，需要手动执行合并
@@ -97,7 +97,7 @@ fun generateReadme(str: String) {
 private var count = 0
 
 private fun parseImgTag(img: Element, parseType: Int) {
-    val imgUrl = img.attr("real_src")
+    val imgUrl = img.parent()!!.attr("href")
     val imgId = getPicId(imgUrl)
     println("find ${formatCount(++count)} img by type $parseType $imgUrl $imgId")
     download(imgId)
@@ -163,7 +163,7 @@ private fun getDownieUrl(picUrl: String, outDir: String): String {
  * 拼接照片原图的URL
  */
 private fun getPicUrl(fileName: String): String {
-    val prefix = "http://s16.sinaimg.cn/orignal/"
+    val prefix = "http://album.sina.com.cn/pic/"
     return prefix + fileName
 }
 
