@@ -1,17 +1,11 @@
-package me.apqx.downie
+package me.apqx.sina
 
+import me.apqx.sina.Tools.formatCount
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 
-internal class SinaBlogPicDownloaderKtTest {
-
-    @Test
-    fun getPicId() {
-        assertEquals("001MZoW0gy6ROOgX7FM22", getPicId("http://s3.sinaimg.cn/mw690/001MZoW0gy6ROOgX7FM22&690"))
-        println("12 12".split(" "))
-        println("12".split(" "))
-    }
+internal class MainKtTest {
 
     @Test
     fun formatCountTest() {
