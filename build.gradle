@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'me.apqx'
-version '1.0.0'
+version '2.0.0'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
@@ -13,10 +13,21 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.0'
     implementation 'org.jsoup:jsoup:1.14.3'
 }
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'me.apqx.sina.MainKt'
+    }
+    // 把依赖打入jar包
+//    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
 }
