@@ -1,4 +1,4 @@
-package me.apqx.sina
+package me.mudan.sina
 
 import java.awt.Desktop
 import java.io.*
@@ -42,7 +42,6 @@ class Downloader(private val terminalReader: BufferedReader, private val imgIdLi
         }
     }
 
-
     private fun download(imgId: String): Boolean = try {
         httpClient.send(
             buildHttpRequest(getImgUrl(imgId)),
@@ -53,7 +52,6 @@ class Downloader(private val terminalReader: BufferedReader, private val imgIdLi
         e.printStackTrace()
         false
     }
-
 
     private fun buildHttpRequest(imgUrl: String) =
         HttpRequest.newBuilder()
@@ -116,5 +114,4 @@ class Downloader(private val terminalReader: BufferedReader, private val imgIdLi
             Desktop.getDesktop().open(File(outDir))
         }
     }
-
 }

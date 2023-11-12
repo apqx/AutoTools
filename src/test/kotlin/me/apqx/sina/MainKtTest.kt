@@ -1,6 +1,6 @@
 package me.apqx.sina
 
-import me.apqx.sina.Tools.formatCount
+import me.mudan.sina.Tools.formatCount
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

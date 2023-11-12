@@ -1,6 +1,6 @@
-package me.apqx.sina.parser
+package me.mudan.sina.parser
 
-import me.apqx.sina.Tools
+import me.mudan.sina.Tools
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.BufferedWriter

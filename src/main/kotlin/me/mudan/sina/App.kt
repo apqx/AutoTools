@@ -1,18 +1,18 @@
-package me.apqx.sina
+package me.mudan.sina
 
-import me.apqx.sina.parser.ThumbParser
-import me.apqx.sina.parser.URLParser
+import me.mudan.sina.parser.ThumbParser
+import me.mudan.sina.parser.URLParser
 import java.io.*
 
 /**
  * 保存着缩略图的目录
  */
-private val thumbDir = "${System.getProperty("user.home")}/Downloads/sinaThumb";
+private val thumbDir = "${System.getProperty("user.home")}/Downloads/SinaThumb";
 
 /**
  * 下载文件的输出目录
  */
-private val outDir = "${System.getProperty("user.home")}/Downloads/sinaDownload";
+private val outDir = "${System.getProperty("user.home")}/Downloads/SinaDownload";
 
 private val terminalReader = BufferedReader(InputStreamReader(System.`in`))
 

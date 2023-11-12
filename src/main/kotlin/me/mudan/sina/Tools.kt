@@ -1,4 +1,4 @@
-package me.apqx.sina
+package me.mudan.sina
 
 object Tools {
     fun formatCount(count: Int): String {
