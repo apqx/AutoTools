@@ -6,7 +6,7 @@
 
 # 使用方式
 
-解压`SinaBlogPicDownloader-*.*.*.zip`，根据所使用的操作系统双击`SinaBlogPicDownloader`或`SinaBlogPicDownloader.bat`即可启动命令行程序，遵循提示输入文章URL。
+解压`SinaBlogPicDownloader-*.*.*.zip`，根据所使用的操作系统双击`SinaBlogPicDownloader`或`SinaBlogPicDownloader.bat`即可启动命令行程序，遵循提示输入文章`URL`。
 
 或手动编译执行：
 
